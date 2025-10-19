@@ -6,7 +6,7 @@ import numpy as np
 
 def main():
     repo_root = Path(__file__).parent
-    csv_path = repo_root / "finance_economics_dataset.csv"
+    csv_path = repo_root / "dataset_cleaned.csv"
     if not csv_path.exists():
         print(f"Dataset not found at {csv_path}. Please run from repo root or place the CSV there.")
         return
@@ -116,7 +116,7 @@ def main():
     out.to_csv(out_all_csv, index=False)
     print(f"Saved full output to: {out_all_csv}")
 
-    # Pretty-print the first 10 rows from the saved CSV using pandas for a clean preview
+   
     print('\nPreview (first 10 rows) of the generated data:')
     df_preview = pd.read_csv(out_all_csv)
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 2000):

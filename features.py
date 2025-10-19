@@ -1,14 +1,11 @@
-from typing import Iterable, List, Optional, Sequence
-
+from typing import Optional, Iterable, Sequence
 import numpy as np
 import pandas as pd
 
 
 def _ensure_datetime_index(df: pd.DataFrame, datetime_col: Optional[str] = None) -> pd.DataFrame:
-    """Return a copy of df with a DatetimeIndex. If datetime_col is provided,
-    convert it to datetime and set it as the index. Otherwise assume index is
-    already time-like.
-    """
+    """Ensure the DataFrame has a DatetimeIndex.  If `datetime_col` is given it will be converted to datetime and set as the
+    index. Otherwise the function will try to convert the existing index to datetimes. Returns a copy of the input DataFrame. """
     df = df.copy()
     if datetime_col is not None:
         if datetime_col not in df.columns:
@@ -24,11 +21,8 @@ def _ensure_datetime_index(df: pd.DataFrame, datetime_col: Optional[str] = None)
 
 
 def add_returns(df: pd.DataFrame, column: str, periods: int = 1, new_col: Optional[str] = None) -> pd.DataFrame:
-    """Add percent returns (simple returns) for `column` using DataFrame.pct_change.
-
-    Returns a new DataFrame with the added column named `new_col` if provided or
-    `{column}_ret` by default.
-    """
+    """Add percent returns (simple returns) for `column` using DataFrame.pct_change.Returns a new DataFrame with the added column named `new_col` if provided or
+    `{column}_ret` by default. """
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     new_col = new_col or f"{column}_ret"
@@ -38,9 +32,7 @@ def add_returns(df: pd.DataFrame, column: str, periods: int = 1, new_col: Option
 
 
 def add_log_returns(df: pd.DataFrame, column: str, periods: int = 1, new_col: Optional[str] = None) -> pd.DataFrame:
-    """Add log returns: log(x_t) - log(x_{t-periods}).
-    Handles non-positive values by returning NaN for those times.
-    """
+    """Compute log-returns for `column`.The result is log(x_t) - log(x_{t-periods}). Non-positive values will produce NaN (log undefined)."""
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     new_col = new_col or f"{column}_logret"
@@ -52,11 +44,8 @@ def add_log_returns(df: pd.DataFrame, column: str, periods: int = 1, new_col: Op
 
 
 def add_rolling_stats(df: pd.DataFrame, column: str, windows: Sequence[int] = (5, 10, 20), stats: Sequence[str] = ("mean", "std")) -> pd.DataFrame:
-    """Add rolling statistics for `column` for each window.
-
-    Supported stats: 'mean', 'std', 'min', 'max', 'median'. New columns are named
-    `{column}_roll_{stat}_{window}`.
-    """
+    """Add rolling statistics for `column`.For each window in `windows` this will add columns named `{column}_roll_{stat}_{window}` for each stat in `stats`.
+    Supported stats: 'mean', 'std', 'min', 'max', 'median'."""
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     out = df.copy()
@@ -80,11 +69,8 @@ def add_rolling_stats(df: pd.DataFrame, column: str, windows: Sequence[int] = (5
 
 
 def add_volatility(df: pd.DataFrame, column: str, window: int = 20, returns_col: Optional[str] = None, new_col: Optional[str] = None) -> pd.DataFrame:
-    """Add rolling volatility (std of returns) for `column`.
-
-    If `returns_col` is provided, volatility will be computed on that column; else
-    it computes returns internally (pct_change) and then rolling std.
-    """
+    """Add rolling volatility (standard deviation of returns). If `returns_col` is given, compute volatility on that series. Otherwise the
+    function computes simple returns internally and uses those."""
     out = df.copy()
     if returns_col is None:
         rtn = out[column].pct_change()
@@ -98,7 +84,7 @@ def add_volatility(df: pd.DataFrame, column: str, window: int = 20, returns_col:
 
 
 def add_lags(df: pd.DataFrame, column: str, lags: Iterable[int]) -> pd.DataFrame:
-    """Add lagged versions of `column`. For each lag k a column `{column}_lag_{k}` is added."""
+    """Add lagged copies of `column`. For each k in `lags` a new column `{column}_lag_{k}` is created (shifted by k)."""
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     out = df.copy()
@@ -108,9 +94,8 @@ def add_lags(df: pd.DataFrame, column: str, lags: Iterable[int]) -> pd.DataFrame
 
 
 def add_spread(df: pd.DataFrame, col1: str, col2: str, new_col: Optional[str] = None, ratio: bool = False) -> pd.DataFrame:
-    """Add spread between two columns. If `ratio` is True, compute col1/col2 instead.
-    New column default name is `{col1}_minus_{col2}` or `{col1}_over_{col2}`.
-    """
+    """Add either the difference or ratio between two columns. By default this adds `{col1}_minus_{col2}` (col1 - col2). If `ratio=True`
+    it computes `{col1}_over_{col2}` (col1 / col2)."""
     if col1 not in df.columns or col2 not in df.columns:
         raise ValueError("One of the specified columns not found in DataFrame")
     out = df.copy()
@@ -125,10 +110,7 @@ def add_spread(df: pd.DataFrame, col1: str, col2: str, new_col: Optional[str] = 
 
 
 def seasonal_difference(df: pd.DataFrame, column: str, period: int = 7, new_col: Optional[str] = None) -> pd.DataFrame:
-    """Compute seasonal difference: x_t - x_{t-period}.
-
-    Useful for removing seasonal components when period is known (e.g., 7 for weekly).
-    """
+    """Compute seasonal difference: x_t - x_{t-period}.Handy to remove a known seasonal pattern (for example period=7 for weekly seasonality)."""
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     out = df.copy()
@@ -138,71 +120,52 @@ def seasonal_difference(df: pd.DataFrame, column: str, period: int = 7, new_col:
 
 
 def add_monthly_diff(df: pd.DataFrame, column: str, months: int = 1, new_col: Optional[str] = None) -> pd.DataFrame:
-    """Compute difference to the value `months` months earlier.
-
-    This aligns rows by calendar date: for each timestamp t we look up the value
-    at t - DateOffset(months=months) and subtract. If there is no exact match
-    (e.g., weekends, missing dates), the result will be NaN for that row.
-    """
+    """Compute the difference between a value and the value `months` earlier.This is calendar-aligned: for each timestamp t we look up the value at
+    t - DateOffset(months=months) and subtract. Missing exact matches (weekends,holidays) result in NaN. The function expects a DatetimeIndex; use `_ensure_datetime_index` if
+    needed. """
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     out = _ensure_datetime_index(df)
     new_col = new_col or f"{column}_mdiff_{months}m"
-    # reindex the series at t - months so it lines up with t indices
     shifted_index = out.index - pd.DateOffset(months=months)
-    prev = out[column].reindex(shifted_index).values
-    # create a Series aligned to original index
-    out[new_col] = out[column].values - prev
-    # where prev is NaN, result will be NaN already
+
+    # Build a mapping timestamp -> last observed value (works with duplicate timestamps)
+    ts_to_val = out[column].groupby(out.index).last()
+    prev_vals = ts_to_val.reindex(shifted_index).values
+    out[new_col] = out[column].values - prev_vals
     return out
 
 
 def add_weekly_diff(df: pd.DataFrame, column: str, weeks: int = 1, new_col: Optional[str] = None) -> pd.DataFrame:
-    """Compute difference to the value `weeks` weeks earlier (calendar-aligned).
-
-    Uses DateOffset(weeks=weeks) to look up the observation at the same weekday
-    `weeks` earlier. If there is no exact match (holidays/missing days), the
-    result will be NaN for that row.
-    """
+    """Compute calendar-aligned weekly difference. Looks up the value on the same weekday `weeks` earlier and subtracts. Missing
+    matches produce NaN. Expects a DatetimeIndex."""
     if column not in df.columns:
         raise ValueError(f"Column '{column}' not found in DataFrame")
     out = _ensure_datetime_index(df)
     new_col = new_col or f"{column}_wdiff_{weeks}w"
     shifted_index = out.index - pd.DateOffset(weeks=weeks)
-    prev = out[column].reindex(shifted_index).values
-    out[new_col] = out[column].values - prev
+
+    ts_to_val = out[column].groupby(out.index).last()
+    prev_vals = ts_to_val.reindex(shifted_index).values
+    out[new_col] = out[column].values - prev_vals
     return out
 
 
 def generate_features(
-    df: pd.DataFrame,
-    column: str,
-    datetime_col: Optional[str] = None,
-    windows: Sequence[int] = (5, 10, 20),
-    lags: Sequence[int] = (1, 2, 3),
-    seasonal_period: Optional[int] = None,
-    monthly_diff: bool = False,
-    monthly_diff_months: int = 1,
-) -> pd.DataFrame:
-    """High-level orchestrator that returns a DataFrame with a sensible set of features.
-
-    It will ensure a DatetimeIndex (if datetime_col provided), add returns, log-returns,
-    rolling mean/std for the windows, volatility (rolling std of returns), requested lags,
-    and seasonal difference if seasonal_period is provided.
-    """
+    df: pd.DataFrame,column: str,datetime_col: Optional[str] = None,windows: Sequence[int] = (5, 10, 20),lags: Sequence[int] = (1, 2, 3),
+    seasonal_period: Optional[int] = None,monthly_diff: bool = False,monthly_diff_months: int = 1,) -> pd.DataFrame:
+    """High-level wrapper that creates a compact set of time-series features. Ensures the DataFrame uses a DatetimeIndex (when `datetime_col` is given),
+    then adds returns, log-returns, rolling mean/std, volatility, lagged returns and optional seasonal/monthly diffs."""
     out = _ensure_datetime_index(df, datetime_col=datetime_col)
     out = add_returns(out, column, periods=1, new_col=f"{column}_ret")
     out = add_log_returns(out, column, periods=1, new_col=f"{column}_logret")
     out = add_rolling_stats(out, column, windows=windows, stats=("mean", "std"))
     out = add_volatility(out, column, window=max(windows), returns_col=f"{column}_ret", new_col=f"{column}_vol_{max(windows)}")
     out = add_lags(out, column=f"{column}_ret", lags=lags)
-    # Add diff (first difference) column
+    # add first-difference
     out[f"{column}_diff_1"] = out[column].diff(1)
-    # Replace legacy single seasonal diff with calendar-aligned quarterly and yearly diffs
-    # when a seasonal_period is requested (keeps backward-compatibility of the flag).
+    # when a seasonal_period is provided, add calendar-aligned quarterly/yearly diffs
     if seasonal_period is not None:
-        # weekly (1 week)
-        out = add_weekly_diff(out, column, weeks=1, new_col=f"{column}_wdiff_1w")
         # quarterly (3 months)
         out = add_monthly_diff(out, column, months=3, new_col=f"{column}_mdiff_3m")
         # yearly (12 months)
