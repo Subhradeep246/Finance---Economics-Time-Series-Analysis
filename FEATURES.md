@@ -1,3 +1,11 @@
+# Notation
+
+- x_t: value of the series at time t (subscript t indicates the time index).
+- t: current time index (row/time stamp); t-1 means previous observation.
+- W: window size for rolling computations (e.g., W=5).
+- w in names like `1w`: stands for week (calendar-aligned period).
+- k: lag index used in `lag_k` (e.g., `lag_1` is previous period).
+
 # FEATURES — concise reference
 
 This repository provides a small set of time-series feature helpers in
@@ -51,21 +59,3 @@ Notes
   edit `feature_demo.py` or add a small CLI wrapper.
 - DatetimeIndex: a pandas Index of dtype datetime64[ns]; required for calendar
   diffs to align by calendar periods rather than fixed row offsets.
-- meanings-
-        ret", "Simple percent change (x_t / x_{t-1} - 1)",
-        logret", "Log return: diff of log(x) (useful for additive returns)",
-        roll_mean_5", "5-period rolling mean of the series",
-        roll_std_5", "5-period rolling standard deviation",
-        roll_mean_10", "10-period rolling mean",
-        roll_std_10", "10-period rolling std",
-        roll_mean_20", "20-period rolling mean",
-        roll_std_20", "20-period rolling std",
-        vol_20", "Volatility: std of returns over a 20-period window",
-        ret_lag_1", "Return lagged by 1 period",
-        ret_lag_2", "Return lagged by 2 periods",
-        ret_lag_3", "Return lagged by 3 periods",
-        diff_1", "First difference: x_t - x_{t-1}",
-        wdiff_1w", "Calendar-aligned weekly difference (x_t - x_{t-1 week})",
-        mdiff_3m", "Calendar-aligned 3-month difference (quarterly)",
-        mdiff_12m", "Calendar-aligned 12-month difference (yearly)",
-        mdiff_1m", "Calendar-aligned 1-month difference (month-over-month)",
