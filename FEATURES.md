@@ -14,7 +14,7 @@ Essentials
   - calendar diffs (only when DataFrame has a DatetimeIndex):
     `{col}_wdiff_1w`, `{col}_mdiff_1m`, `{col}_mdiff_3m`, `{col}_mdiff_12m`
 
-# Notes on features (short)
+# Notes on features 
 
 This file describes what `features.py` does and what the columns mean. Keep it
 handy as a quick reference.
@@ -41,10 +41,7 @@ Column meanings (quick)
 - Calendar diffs: difference between value and the value one calendar
   period earlier (week/month/quarter/year); requires a `DatetimeIndex`
 
-Quick use
-```powershell
-python feature_demo.py
-```
+
 
 Notes
 - Calendar diffs need the DataFrame to have a `DatetimeIndex`. If the CSV
@@ -54,3 +51,21 @@ Notes
   edit `feature_demo.py` or add a small CLI wrapper.
 - DatetimeIndex: a pandas Index of dtype datetime64[ns]; required for calendar
   diffs to align by calendar periods rather than fixed row offsets.
+- meanings-
+        ret", "Simple percent change (x_t / x_{t-1} - 1)",
+        logret", "Log return: diff of log(x) (useful for additive returns)",
+        roll_mean_5", "5-period rolling mean of the series",
+        roll_std_5", "5-period rolling standard deviation",
+        roll_mean_10", "10-period rolling mean",
+        roll_std_10", "10-period rolling std",
+        roll_mean_20", "20-period rolling mean",
+        roll_std_20", "20-period rolling std",
+        vol_20", "Volatility: std of returns over a 20-period window",
+        ret_lag_1", "Return lagged by 1 period",
+        ret_lag_2", "Return lagged by 2 periods",
+        ret_lag_3", "Return lagged by 3 periods",
+        diff_1", "First difference: x_t - x_{t-1}",
+        wdiff_1w", "Calendar-aligned weekly difference (x_t - x_{t-1 week})",
+        mdiff_3m", "Calendar-aligned 3-month difference (quarterly)",
+        mdiff_12m", "Calendar-aligned 12-month difference (yearly)",
+        mdiff_1m", "Calendar-aligned 1-month difference (month-over-month)",
