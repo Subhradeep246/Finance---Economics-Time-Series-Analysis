@@ -118,6 +118,10 @@ def main():
 
    
     print('\nPreview (first 10 rows) of the generated data:')
+    first10 = out.head(10)
+    out_preview_csv = repo_root / 'features_preview.csv'
+    first10.to_csv(out_preview_csv, index=False)
+    
     df_preview = pd.read_csv(out_all_csv)
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 2000):
         print(df_preview.head(10).to_string(index=False))
